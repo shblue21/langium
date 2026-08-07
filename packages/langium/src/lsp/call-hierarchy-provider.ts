@@ -16,6 +16,7 @@ import type { ReferenceDescription } from '../workspace/ast-descriptions.js';
 import type { LangiumDocument, LangiumDocuments } from '../workspace/documents.js';
 import type { MaybePromise } from '../utils/promise-utils.js';
 import { SymbolKind } from 'vscode-languageserver';
+import { getDocument } from '../utils/ast-utils.js';
 import { findDeclarationNodeAtOffset } from '../utils/cst-utils.js';
 import { URI } from '../utils/uri-utils.js';
 
@@ -61,7 +62,7 @@ export abstract class AbstractCallHierarchyProvider implements CallHierarchyProv
 
         const items: CallHierarchyItem[] = [];
         for (const declarationNode of declarationNodes) {
-            items.push(...(this.getCallHierarchyItems(declarationNode.astNode, document) ?? []));
+            items.push(...(this.getCallHierarchyItems(declarationNode.astNode, getDocument(declarationNode.astNode)) ?? []));
         }
         return items;
     }

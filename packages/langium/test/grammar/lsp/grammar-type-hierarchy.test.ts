@@ -97,6 +97,36 @@ describe('LangiumGrammarTypeHierarchyProvider', async () => {
             expect(result).toStrictEqual(expectedItems);
         });
     });
+
+    test('should resolve hierarchy items to the declaration document', async () => {
+        const services = createLangiumGrammarServices(EmptyFileSystem).grammar;
+        const parse = parseHelper(services);
+        const target = await parse(`
+            grammar Target
+            entry TargetRoot: value='target';
+            interface Named {}
+            interface Entity extends Named {}
+        `, { documentUri: 'file:///target.langium' });
+        const sourceText = `
+            grammar Source
+            import "./target"
+            entry SourceRoot: value='source';
+            interface Customer extends Entity {}
+        `;
+        const source = await parse(sourceText, { documentUri: 'file:///source.langium' });
+        const provider = services.lsp.TypeHierarchyProvider!;
+
+        const items = await provider.prepareTypeHierarchy(source, {
+            textDocument: { uri: source.textDocument.uri },
+            position: source.textDocument.positionAt(sourceText.indexOf('Entity'))
+        });
+
+        expect(items).toHaveLength(1);
+        const item = items![0];
+        expect(item.uri).toBe(target.textDocument.uri);
+        const supertypes = await provider.supertypes({ item });
+        expect(supertypes?.map(item => item.name)).toStrictEqual(['Named']);
+    });
 });
 
 const getActualSimpleSupertypes = async (code: string): Promise<SimpleTypeHierarchyItem[] | undefined> => {

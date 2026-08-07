@@ -17,6 +17,7 @@ import type { NameProvider } from '../references/name-provider.js';
 import type { References } from '../references/references.js';
 import type { LangiumServices } from './lsp-services.js';
 import type { AstNode } from '../syntax-tree.js';
+import { getDocument } from '../utils/ast-utils.js';
 import { findDeclarationNodeAtOffset } from '../utils/cst-utils.js';
 import { URI } from '../utils/uri-utils.js';
 import type { LangiumDocument, LangiumDocuments } from '../workspace/documents.js';
@@ -61,7 +62,7 @@ export abstract class AbstractTypeHierarchyProvider implements TypeHierarchyProv
         const declarationNodes = this.references.findDeclarationNodes(targetNode);
         const items: TypeHierarchyItem[] = [];
         for (const declarationNode of declarationNodes) {
-            items.push(...(this.getTypeHierarchyItems(declarationNode.astNode, document) ?? []));
+            items.push(...(this.getTypeHierarchyItems(declarationNode.astNode, getDocument(declarationNode.astNode)) ?? []));
         }
         return items;
     }
